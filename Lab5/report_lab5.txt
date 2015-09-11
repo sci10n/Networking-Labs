@@ -1,0 +1,9 @@
+
+Report Lab5
+
+1. The purpose of the nameserver
+A call to the client without a nameserver
+
+2. Why does the callback not affect how objects are implemented in the server
+Are there any other ways to implement asynchronous calls in Corba
+

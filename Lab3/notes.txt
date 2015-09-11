@@ -1,0 +1,84 @@
+erijo599, mares480
+
+Lab 3
+
+1. The first packet is numbered 4 and the last one 199.
+2. The client's ip address is 192.168.1.202 with the portnumber 1161.
+3. The server's ip address is 128.119.245.12 with portnumber 80.
+4. The SYN packet's sequence number is 0 because sequence numbers are only useful within an established connection.
+5. The SYN/ACK packet also has the sequence number 0 and both ACK and SYN flags are set. The acknowledgment field is set to 1 indicating that it is a acknowledgment to the packet sent from the client which had sequence number 0. The acknowledgment number is determined as the 
+6. The sequence number for the segment containing the POST request is 1.
+7. This is a table of the six first segments:
+
+ERTT = (1 - a) * SRTT + a * ERTT
+
+SeqN  Sent      ACKRCVD   RTT     ERTT      Len
+1     0.026477  0.053937  0.02746 0.02746   1460
+566   0.041737  0.077294  0.03556 0.034548  1460
+2026  0.054026  0.124085  0.07006 0.065621  1460
+3486  0.054690  0.169118  0.11443 0.108329  1460
+4946  0.077405  0.217299  0.13989 0.135945  1460
+6406  0.078157  0.267802  0.18965 0.182937  1460
+
+9. The minimum advertised bufferspace is visible in the "Window size value" of the SYN/ACK packet with the value 5840 bytes. There hasn't been any bufferspace overflow because the "Window size value" never drops below the minimum advertised buffer size (5840 bytes).
+
+10. We sorted the packets in Wireshark by sequence numbers to check for duplicate segments and we couldn't find any.
+
+11. The typical ACK acknowledge 1480 bytes. A couple of cases where the server is ACK:ing every other is for example: package 141 where it's ACK:ing 2 * 1480 bytes.
+
+12.
+The average throughput is: 0.187321088 Mbits/sec, which we managed to discover by using the built in statstics tool after filtering away packages not belonging to the TCP connection. 
+
+A: The trace incorporates the setup of a TCP connection used for a HTTP POST request. The connection is initiated with a "Three-way handshake" meaning, the client sends a SYN packet, which if received by a server running a web service will be responded to with a SYN/ACK packet. The client then responds to the SYN/ACK with an ACK packet, which are sent by the receiving side in order to assure the sender that it has received the packet.
+Once the connection is established the client starts to send a HTTP POST request with a lot of plain text data. TCP splits this data up into many smaller packages which the server will respond to with ACK-packets. Finally, the server responds with HTTP OK package.
+By examining the trace file we were unable to find any packets that were resent, which means it doesn't seem to have been any timeouts or losses (see q:10,11). RTT estimates are utilized to detect potential package congestion, flooding and timeouts. In case of packet losses and retransmissions there is a risk for possible congestion and in that case RTT could increase.
+
+13. (Graph 1: trace: trace-file new) It seems that "slow start" starts after we have gotten the ACK-paket of the "three way handshake".
+(Graph 2: trace: trace-file old) Slow start is active from first package to around 0.12 seconds. After this there is little to no detecatble congestion avoidance. We send 6 packets at a time and the only form of congestion control is a timeout of 0.18 seconds. 
+The measured data of Graph 2 shows that the advertised frame window increases on the receiving side meaning it has no problem processing the packages.
+Graph 1 differs from the ideal connection by it's increase in time sending only one packet. By viewing the window size on the receiving side we see that it has problems keeping up with the data. 
+
+14.
+the congestion window is the amount of packages in transit. When the connection is struggling to keep up the windows should shrink and when everything is fine it's size should increase. The receiver advertised window size is the amount of bytes the receiver can handle. when it decrease it means the receiver is struggling to keep up.
+The number of unacknowledged bytes is the data the sender awaits acknowledgments for. The number of unacknowledged bytes in transit is controlled by the effective window which makes TCP wait for timeouts or ACK-packets before risking congestion.
+The effective window size is a function of the congestion window size and the advertised window size. The advertised window is the amount of data the receiver is able to accept without discarding packets. The congestion window is the maximum amount of packages that can be sent with a low probability of causing congestion.
+
+15.
+
+We can't determine the size of the cwin because there are other factors which can limit the data we send before acknowlegement. For example flow control, and advertised window size.
+
+16.
+
+Connection  Throughput
+1           1.83 MiB/s
+2           1.83 MiB/s
+3           1.83 MiB/s
+4           1.83 MiB/s
+
+The connections appear to get a very fair distribution of the available bandwidth.
+The total bandwidth of the host should be about 7.32 MiB/s.
+
+17.
+
+Connection  Throughput
+1           16.63 MiB/s
+2           11.22 MiB/s
+3           9.38  MiB/s
+4           8.93  MiB/s
+5           6.94  MiB/s
+6           4.20  MiB/s
+7           4.20  MiB/s
+8           2.74  MiB/s
+9           2.52  MiB/s
+
+The total bandwidth of the host is 66,76 MiB/s.
+The throughput each client receives isn't fair in this case. Just like in the previous case each connection remains for about the same duration. The total transferred bytes differs allot from connection to connection despite the same file being requested. A possible explanation for this is that the client is downloading the same file but different segments from the different servers. This results in the browser closing the connection once all the segments are downloaded.
+
+18.
+
+We can't determine the TCP fairness of the BitTorrent network because we only observe the connection from one node. The first connection is to the same host meaning the routing would be close to identical. This would explain why the RTT is the same for each connection. The second connection type is for the same data from different hosts meaning the RTT would, as seen in the table differ allot based on the different routing. What we can assume from the connections are that the hosts close the connection after 90 seconds irregardless whether the file has been downloaded.
+It seems likely that we fetch the same file from several servers and use that downloaded parts to build it's own file with data from different servers, instead of downloading the data into several separate files. In that case it would make sense for the client to drop some connections because it already has the full file.
+TCP fairness means that each connection get a equal size of the bandwidth through window scaling to minimize packet loss. TCP will probe for higher rates, eventually get data losses and respond to them by going through it's slow start, congestion avoidance and fast recovery states. 
+Each TCP connection will effectively scale their windows, avoid losses and reach stable data rates that in effect are more or less equal. 
+
+

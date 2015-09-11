@@ -1,0 +1,12 @@
+module ChatApp {
+  interface ChatCallback {
+    void callback(in string message);
+    void joinGame();
+    void leaveGame();
+    void drawGame(in string map);
+  };
+  interface Chat {
+    string say(in ChatCallback objref, in string message);
+    string play(in ChatCallback objref, in string message);
+  };
+};

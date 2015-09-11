@@ -1,0 +1,31 @@
+Report - Lab4 Distance Vector Routing
+
+mares480 erijo599
+
+> How does distance network routing work?
+Each node has a routing table containing the least cost path to each other node. When a node detects that there's a less costly way to a node it changes it's internal table and sends a message to each of it's neighbours containing it's own internal table. The neighbours change their internal tables accordingly if they find a new least cost to a node.
+
+> Testing of the algorithm
+The algorithm was tested using the simulations provided, starting with the least complex one and disabling LINK_CHANGE events. Once the algorithm worked for each simulation we enabled LINK_CHANGE events and went back to the least complex graph.
+
+To detect errors we printed the internal distance table for each node and checked with our own calculations.
+
+> Cases where poisoned reverse may fail
+One case when the poisoned reverse algorithm doesn't work is when there is a LINK_CHANGE causing a routing loop whereas the nodes aren't direct neighbours.
+The poisoned reverse alone can only fix the count to infinity problem in cases where there are only three nodes, any more nodes can cause additional loops between nodes. 
+An example we tested is the following graph:
+ 0-(3)-1	      0--(3)-1
+ |     |	      |      |
+(23)  (1)      (23)   (1)
+ |     |	      |      |
+ 2-(5)-3	      2-(10)-3
+
+(Simulation is sent with the code)
+
+> Solution to the problem
+A fairly simple solution to the problem would be to include a extra field in the message sent by a node to it's neighbours containing information explaining that the node detected a routing loop and wants to broadcast this to the entire network. This would mean that a routing loop doesn't have to be solved by a direct neighbour, but by a node further away from the LINK_CHANGE not limiting the effectiveness of poisoned reverse to routing loops with only 3 nodes. 
+Another solution we found is called "Holddown"[1] which means that a node starts a timer when they receive packets about a node or network that is unreachable.
+Until the timer has expired any packets claiming or indicating that the node or network is still reachable will be discarded. When the timer runs out the node will stop the holddown and interpret any routing information as normal under the assumption that the network has reached a more stable state. Although the holddown method is an inefficient solution, it makes the distance vector routing algorithm more resistant to the count to infinity problem.
+ 
+References:
+1. "RIP Special Features For Resolving RIP Algorithm Problems". The TCP/IP Guide. 2005-09-20. Retrieved 2012-01-09.
